@@ -1,5 +1,5 @@
 # selenium-telegram-auto-forwards
-Selenium: Forwarding web telegram messages from chat to chat with cooldown + deletion 
+Selenium: Forwarding web telegram messages from chat to chat with cooldown 
 #Selenium 4.8.2 
 #Python 3.11.2
 
