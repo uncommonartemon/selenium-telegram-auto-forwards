@@ -12,14 +12,16 @@ import datetime
 import os
 
 root = tk.Tk()
+your_width = root.winfo_screenwidth()
+your_height = root.winfo_screenheight()
 
-source_chat = 'YOUR_SOURCE_CHAT_URL'  
-chat_name = ["Chat_name_for_forward", "Chat_name_for_forward"]                          
-source_name = "NAME_U'R_SOURCE_CHAT"                            
-hash = '#notebook'    #hashtag for bot                                   
-driver_url = 'C:\\driver\\chromedriver.exe'   #path chromedriver   
+source_chat = 'https://web.telegram.org/z/URL_SOURCE_CHAT' #add url source  
+chat_name = ["Chat name", "Chat name"] #Where to send from source (take into account all indentations)
+source_name = "Для бота" #name source chat (tested in a fixed state in the chat lists . from here the bot will take messages)
+hash = '#пост' #forwards messages by this hashtag                                       
+driver_url = 'C:\\driver\\chromedriver.exe'      
 cooldown_message = 15 * 60     
-cooldown = 3
+cooldown = 4
 cd_after_refresh = 10
 
 chrome_options = Options()
@@ -45,21 +47,48 @@ while True:
         time.sleep(10)
 
     def all_posts(): #2
-        message_list = WebDriverWait(driver, 0).until(EC.presence_of_element_located((By.CLASS_NAME, "messages-container")))
+        time.sleep(cooldown)
+        scroll()
+        time.sleep(cooldown)
+        message_list = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.CLASS_NAME, "messages-container")))
         actions.move_to_element(message_list).perform()
+        time.sleep(cooldown)
         hashtags = message_list.find_elements(By.XPATH, ".//a[contains(text(), '"+ hash +"' )]")
         all_posts = []
         for x in hashtags:
             post = x.find_element(By.XPATH, './ancestor::div[contains(@class, "message")][1]')
             all_posts.append(post)
+        print("Всего обнаружено постов :" + str(len(all_posts)))
         return all_posts
+
+    def scroll():
+        container = driver.find_element(By.CLASS_NAME, 'messages-container')
+        actions.move_to_element(container).perform()
+        print("Высота чата " + str(container.size['height']) + ', скролим')
+        size = container.size['height']
+        while True:
+            driver.execute_script("arguments[0].scrollIntoView(true);", container)
+            time.sleep(cooldown)
+            time.sleep(cooldown)
+            if container.size['height'] == size:
+                break
+            size = container.size['height']
+        
     
     def back_to_source():
+        time.sleep(cooldown)
+        search = driver.find_element(By.ID, 'telegram-search-input')
+        #search.send_keys(source_name)
+        time.sleep(cooldown)
         button_source = driver.find_element(By.XPATH, '//h3[text()="' + source_name +'"]')
+        driver.execute_script("arguments[0].scrollIntoView();", button_source)
+        
         button_source_parent = button_source.find_element(By.XPATH, './ancestor::div[contains(@class, "chat-item-clickable")]')
-        driver.execute_script("arguments[0].scrollIntoView({behavior: 'auto', block: 'center', inline: 'center', scrollY: 0});", button_source)
+        time.sleep(1)
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'auto', block: 'center', inline: 'center', scrollY: 0});", button_source_parent)
         time.sleep(cooldown)
         actions.click(button_source_parent).perform() #back to source
+        time.sleep(cooldown)
 
     def post_click(post): #3
         if driver.current_url != source_chat:
@@ -69,7 +98,7 @@ while True:
         actions.move_to_element(post).perform()
         actions.context_click(post).perform() 
         time.sleep(cooldown)
-        forward = WebDriverWait(post, cooldown).until(EC.presence_of_all_elements_located((By.XPATH, '//i[@class="icon-forward"]')))[0].find_element(By.XPATH, '..')
+        forward = WebDriverWait(post, cooldown).until(EC.presence_of_all_elements_located((By.XPATH, '//i[@class="icon icon-forward"]')))[0].find_element(By.XPATH, '..')
         time.sleep(cooldown)
         actions.move_to_element(forward).perform()
         actions.click(forward).perform()
@@ -110,9 +139,11 @@ while True:
             time.sleep(cooldown_message)
 
     if driver.current_url == source_chat:
+        time.sleep(cooldown)
         local_storage_save()
         push()
         driver.refresh()
+        time.sleep(cooldown)
         back_to_source()
             
     time.sleep(cooldown)
