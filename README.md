@@ -1,5 +1,5 @@
 # selenium-telegram-auto-forwards
-Selenium: Forwarding web telegram messages from chat to chat with cooldown 
+Selenium: Forwarding web telegram messages from chat to chat with cooldown.
 I recommend using venv and taking advantage of requirements.txt, or just install webdriver_manager and selenium.
 User interface in bot.py:
 ```
